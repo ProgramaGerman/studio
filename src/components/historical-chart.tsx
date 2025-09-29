@@ -1,6 +1,6 @@
 "use client";
 
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import {
   ChartContainer,
   ChartTooltip,
@@ -34,13 +34,32 @@ const chartConfig = {
 
 export function HistoricalChart({ data, weekendPeak }: HistoricalChartProps) {
   const [selectedCurrency, setSelectedCurrency] = useState<CurrencyCode>("USD");
+  const [formattedPeakDate, setFormattedPeakDate] = useState("");
 
   const chartData = data.map((item) => ({
-    date: new Date(item.date).toLocaleDateString('es-VE', { month: 'short', day: 'numeric'}),
+    date: new Date(`${item.date}T00:00:00Z`).toLocaleDateString('es-VE', { month: 'short', day: 'numeric', timeZone: 'UTC' }),
     rate: item[selectedCurrency],
   }));
 
   const peak = weekendPeak[selectedCurrency];
+
+  useEffect(() => {
+    if (peak && peak.date) {
+      const date = new Date(`${peak.date}T00:00:00Z`);
+      setFormattedPeakDate(
+        date.toLocaleDateString('es-VE', {
+          weekday: 'long',
+          year: 'numeric',
+          month: 'long',
+          day: 'numeric',
+          timeZone: 'UTC'
+        })
+      );
+    } else {
+      setFormattedPeakDate("");
+    }
+  }, [peak]);
+
 
   const formatCurrency = (value: number) => {
     return value.toLocaleString('es-VE', { minimumFractionDigits: 2, maximumFractionDigits: 2 });
@@ -133,7 +152,7 @@ export function HistoricalChart({ data, weekendPeak }: HistoricalChartProps) {
                         {formatCurrency(peak.value)}
                     </p>
                     <p className="text-muted-foreground mt-2">
-                        {new Date(peak.date).toLocaleDateString('es-VE', { weekday: 'long', year: 'numeric', month: 'long', day: 'numeric' })}
+                        {formattedPeakDate}
                     </p>
                 </div>
             ) : (

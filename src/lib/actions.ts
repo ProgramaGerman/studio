@@ -108,14 +108,20 @@ export const getHistoricalRates = unstable_cache(
 export const getWeekendPeak = unstable_cache(
   async (): Promise<WeekendPeak> => {
     const historicalData = await getHistoricalRates();
-    let lastSaturday = new Date();
-    lastSaturday.setDate(lastSaturday.getDate() - ((lastSaturday.getDay() + 1) % 7));
-    let lastSunday = new Date(lastSaturday);
-    lastSunday.setDate(lastSaturday.getDate() + 1);
+    const today = new Date();
+    const dayOfWeek = today.getDay(); // Sunday is 0, Saturday is 6
+
+    const mostRecentSaturday = new Date(today);
+    mostRecentSaturday.setDate(today.getDate() - dayOfWeek - 1);
+    const mostRecentSunday = new Date(today);
+    mostRecentSunday.setDate(today.getDate() - dayOfWeek);
 
     const weekendRates = historicalData.filter(rate => {
         const rateDate = new Date(rate.date);
-        return rateDate.getTime() === lastSaturday.setHours(0,0,0,0) || rateDate.getTime() === lastSunday.setHours(0,0,0,0);
+        const rateTime = new Date(rateDate.getUTCFullYear(), rateDate.getUTCMonth(), rateDate.getUTCDate()).getTime();
+        const satTime = new Date(mostRecentSaturday.getUTCFullYear(), mostRecentSaturday.getUTCMonth(), mostRecentSaturday.getUTCDate()).getTime();
+        const sunTime = new Date(mostRecentSunday.getUTCFullYear(), mostRecentSunday.getUTCMonth(), mostRecentSunday.getUTCDate()).getTime();
+        return rateTime === satTime || rateTime === sunTime;
     });
 
     let peakUsd = { date: '', value: 0 };
