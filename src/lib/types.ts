@@ -11,3 +11,14 @@ export type ExchangeRate = {
   rate: number;
   source: string;
 };
+
+export type HistoricalRate = {
+  date: string;
+  USD: number;
+  EUR: number;
+};
+
+export type WeekendPeak = {
+  USD: { date: string; value: number };
+  EUR: { date: string; value: number };
+};

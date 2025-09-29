@@ -1,0 +1,125 @@
+"use client";
+
+import { useState } from "react";
+import {
+  ChartContainer,
+  ChartTooltip,
+  ChartTooltipContent,
+  ChartLegend,
+  ChartLegendContent,
+} from "@/components/ui/chart";
+import {
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from "@/components/ui/select";
+import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
+import { Bar, BarChart, CartesianGrid, XAxis, YAxis } from "recharts";
+import type { HistoricalRate, WeekendPeak, CurrencyCode } from "@/lib/types";
+import { TrendingUp } from "lucide-react";
+
+type HistoricalChartProps = {
+  data: HistoricalRate[];
+  weekendPeak: WeekendPeak;
+};
+
+const chartConfig = {
+  rate: {
+    label: "Tasa",
+    color: "hsl(var(--primary))",
+  },
+};
+
+export function HistoricalChart({ data, weekendPeak }: HistoricalChartProps) {
+  const [selectedCurrency, setSelectedCurrency] = useState<CurrencyCode>("USD");
+
+  const chartData = data.map((item) => ({
+    date: new Date(item.date).toLocaleDateString('es-VE', { month: 'short', day: 'numeric'}),
+    rate: item[selectedCurrency],
+  }));
+
+  const peak = weekendPeak[selectedCurrency];
+
+  const formatCurrency = (value: number) => {
+    return value.toLocaleString('es-VE', { minimumFractionDigits: 2, maximumFractionDigits: 2 });
+  }
+
+  return (
+    <div className="space-y-8">
+      <Card>
+        <CardHeader className="flex flex-row items-center justify-between pb-2">
+          <CardTitle>Historial de 30 días</CardTitle>
+          <Select value={selectedCurrency} onValueChange={(value) => setSelectedCurrency(value as CurrencyCode)}>
+            <SelectTrigger className="w-[120px]">
+              <SelectValue placeholder="Moneda" />
+            </SelectTrigger>
+            <SelectContent>
+              <SelectItem value="USD">USD</SelectItem>
+              <SelectItem value="EUR">EUR</SelectItem>
+            </SelectContent>
+          </Select>
+        </CardHeader>
+        <CardContent>
+          <ChartContainer config={chartConfig} className="h-[300px] w-full">
+            <BarChart data={chartData} margin={{ top: 20, right: 20, left: -10, bottom: 5 }}>
+              <CartesianGrid vertical={false} />
+              <XAxis
+                dataKey="date"
+                tickLine={false}
+                axisLine={false}
+                tickMargin={8}
+                fontSize={12}
+              />
+              <YAxis
+                tickLine={false}
+                axisLine={false}
+                tickMargin={8}
+                tickFormatter={(value) => formatCurrency(value)}
+                domain={['dataMin - 1', 'dataMax + 1']}
+              />
+              <ChartTooltip
+                cursor={false}
+                content={
+                  <ChartTooltipContent
+                    formatter={(value) => formatCurrency(value as number)}
+                    labelClassName="font-bold"
+                  />
+                }
+              />
+              <Bar dataKey="rate" fill="var(--color-rate)" radius={4} />
+            </BarChart>
+          </ChartContainer>
+        </CardContent>
+      </Card>
+      <Card>
+        <CardHeader>
+          <CardTitle className="flex items-center gap-2">
+            <TrendingUp className="h-5 w-5 text-primary" />
+            Pico del Fin de Semana
+          </CardTitle>
+          <CardDescription>
+            El valor más alto alcanzado para {selectedCurrency} el último fin de semana.
+          </CardDescription>
+        </CardHeader>
+        <CardContent>
+            {peak && peak.value > 0 ? (
+                <div className="text-center">
+                    <p className="text-4xl font-bold text-primary">
+                        {formatCurrency(peak.value)}
+                    </p>
+                    <p className="text-muted-foreground mt-2">
+                        {new Date(peak.date).toLocaleDateString('es-VE', { weekday: 'long', year: 'numeric', month: 'long', day: 'numeric' })}
+                    </p>
+                </div>
+            ) : (
+                <p className="text-center text-muted-foreground">
+                    No hay datos disponibles para el último fin de semana.
+                </p>
+            )}
+        </CardContent>
+      </Card>
+    </div>
+  );
+}

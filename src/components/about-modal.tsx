@@ -30,7 +30,7 @@ export function AboutModal() {
         </DialogHeader>
         <div className="space-y-4 py-4 text-sm text-muted-foreground">
             <p>
-                TasaReal es una aplicación web que proporciona tasas de cambio en tiempo real para el Dólar (USD) y el Euro (EUR) frente al Bolívar (VES). Incluye también un práctico convertidor de divisas.
+                TasaReal es una aplicación web que proporciona tasas de cambio en tiempo real para el Dólar (USD) y el Euro (EUR) frente al Bolívar (VES). Incluye también un práctico convertidor de divisas y un análisis histórico de las tasas.
             </p>
             <p>
                 El objetivo es ofrecer una herramienta sencilla y confiable para consultar el valor de las divisas.

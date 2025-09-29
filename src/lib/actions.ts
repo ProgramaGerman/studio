@@ -3,7 +3,7 @@
 
 import { unstable_cache } from 'next/cache';
 import { getFallbackExchangeRate } from '@/ai/flows/fallback-exchange-rate';
-import type { ExchangeRate } from '@/lib/types';
+import type { ExchangeRate, HistoricalRate, WeekendPeak } from '@/lib/types';
 
 async function fetchFromPrimarySource(base: string, target: string): Promise<number | null> {
     console.log(`Attempting to fetch ${base}/${target} from primary source...`);
@@ -69,4 +69,71 @@ export const getExchangeRates = unstable_cache(
     }
 );
 
+// Faking historical data for the last 30 days
+export const getHistoricalRates = unstable_cache(
+  async (): Promise<HistoricalRate[]> => {
+    const today = new Date();
+    const data: HistoricalRate[] = [];
+    const currentRates = await getExchangeRates();
+    const usdRate = currentRates.find(r => r.base === 'USD')?.rate || 36;
+    const eurRate = currentRates.find(r => r.base === 'EUR')?.rate || 40;
+
+    for (let i = 29; i >= 0; i--) {
+      const date = new Date(today);
+      date.setDate(today.getDate() - i);
+      const dateString = date.toLocaleDateString('en-CA'); // YYYY-MM-DD
+
+      // Simulate some fluctuations
+      const usdFluctuation = (Math.random() - 0.5) * 0.5;
+      const eurFluctuation = (Math.random() - 0.5) * 0.6;
+      
+      data.push({
+        date: dateString,
+        USD: parseFloat((usdRate - (i / 10) + usdFluctuation).toFixed(2)),
+        EUR: parseFloat((eurRate - (i / 10) + eurFluctuation).toFixed(2)),
+      });
+    }
+
+    return data;
+  },
+  ['historical-rates'],
+  {
+    revalidate: 3600,
+    tags: ['rates'],
+  }
+);
+
+
+// Faking weekend peak data
+export const getWeekendPeak = unstable_cache(
+  async (): Promise<WeekendPeak> => {
+    const historicalData = await getHistoricalRates();
+    let lastSaturday = new Date();
+    lastSaturday.setDate(lastSaturday.getDate() - ((lastSaturday.getDay() + 1) % 7));
+    let lastSunday = new Date(lastSaturday);
+    lastSunday.setDate(lastSaturday.getDate() + 1);
+
+    const weekendRates = historicalData.filter(rate => {
+        const rateDate = new Date(rate.date);
+        return rateDate.getTime() === lastSaturday.setHours(0,0,0,0) || rateDate.getTime() === lastSunday.setHours(0,0,0,0);
+    });
+
+    let peakUsd = { date: '', value: 0 };
+    let peakEur = { date: '', value: 0 };
+
+    if (weekendRates.length > 0) {
+        peakUsd = weekendRates.reduce((max, rate) => rate.USD > max.value ? { date: rate.date, value: rate.USD } : max, { date: '', value: 0 });
+        peakEur = weekendRates.reduce((max, rate) => rate.EUR > max.value ? { date: rate.date, value: rate.EUR } : max, { date: '', value: 0 });
+    }
     
+    return {
+        USD: peakUsd,
+        EUR: peakEur,
+    };
+  },
+  ['weekend-peak'],
+  {
+    revalidate: 86400, // Revalidate daily
+    tags: ['rates'],
+  }
+);
