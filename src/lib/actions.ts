@@ -7,9 +7,21 @@ import type { ExchangeRate } from '@/lib/types';
 
 async function fetchFromPrimarySource(base: string, target: string): Promise<number | null> {
     console.log(`Attempting to fetch ${base}/${target} from primary source...`);
-    // This is a mock. DolarApi.com is for ARS, not VES.
-    // We return null to simulate an API failure or unsupported currency.
-    return null;
+    try {
+        const response = await fetch(`https://api.exchangerate-api.com/v4/latest/${base}`);
+        if (!response.ok) {
+            console.error('Failed to fetch from ExchangeRate-API');
+            return null;
+        }
+        const data = await response.json();
+        if (data.rates && data.rates[target]) {
+            return data.rates[target];
+        }
+        return null;
+    } catch (error) {
+        console.error('Error fetching from ExchangeRate-API:', error);
+        return null;
+    }
 }
 
 export const getExchangeRates = unstable_cache(
@@ -23,7 +35,7 @@ export const getExchangeRates = unstable_cache(
 
         for (const { base, target } of currenciesToFetch) {
             let rate: number | null = await fetchFromPrimarySource(base, target);
-            let source = 'DolarApi.com (Mock)';
+            let source = 'ExchangeRate-API';
             let error = '';
 
             if (!rate) {
@@ -56,3 +68,5 @@ export const getExchangeRates = unstable_cache(
         tags: ['rates'],
     }
 );
+
+    

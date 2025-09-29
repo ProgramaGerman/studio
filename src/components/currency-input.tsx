@@ -3,7 +3,6 @@
 import type { ComponentProps } from 'react';
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
-import { CURRENCIES } from "@/lib/currencies";
 import type { CurrencyCode } from '@/lib/types';
 
 interface CurrencyInputProps extends Omit<ComponentProps<'input'>, 'onChange'> {
@@ -15,7 +14,14 @@ interface CurrencyInputProps extends Omit<ComponentProps<'input'>, 'onChange'> {
 }
 
 export function CurrencyInput({ id, label, currency, value, onChange, ...props }: CurrencyInputProps) {
-  const Icon = CURRENCIES[currency]?.icon;
+    const getIconClass = (currency: string) => {
+        switch(currency) {
+          case 'USD': return 'fa-solid fa-dollar-sign';
+          case 'EUR': return 'fa-solid fa-euro-sign';
+          case 'VES': return 'fa-solid fa-landmark';
+          default: return '';
+        }
+      }
 
   return (
     <div className="space-y-2">
@@ -24,7 +30,7 @@ export function CurrencyInput({ id, label, currency, value, onChange, ...props }
       </Label>
       <div className="relative">
         <div className="pointer-events-none absolute inset-y-0 left-0 flex items-center pl-3">
-          {Icon && <Icon className="h-5 w-5 text-muted-foreground" />}
+          <i className={`${getIconClass(currency)} h-5 w-5 text-muted-foreground`}></i>
         </div>
         <Input
           id={id}
@@ -47,3 +53,5 @@ export function CurrencyInput({ id, label, currency, value, onChange, ...props }
     </div>
   );
 }
+
+    

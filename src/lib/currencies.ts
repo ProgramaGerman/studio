@@ -1,7 +1,9 @@
-import { CircleDollarSign, Euro, Landmark } from 'lucide-react';
+// This file is no longer used for icons, but is kept for structure.
 
-export const CURRENCIES: Record<string, { name: string; icon: React.FC<React.SVGProps<SVGSVGElement>> }> = {
-  USD: { name: 'US Dollar', icon: CircleDollarSign },
-  EUR: { name: 'Euro', icon: Euro },
-  VES: { name: 'Venezuelan Bolívar', icon: Landmark },
+export const CURRENCIES: Record<string, { name: string; }> = {
+  USD: { name: 'US Dollar' },
+  EUR: { name: 'Euro' },
+  VES: { name: 'Venezuelan Bolívar' },
 };
+
+    
