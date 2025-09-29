@@ -46,6 +46,14 @@ export function HistoricalChart({ data, weekendPeak }: HistoricalChartProps) {
     return value.toLocaleString('es-VE', { minimumFractionDigits: 2, maximumFractionDigits: 2 });
   }
 
+  const getIconClass = (currency: string) => {
+    switch(currency) {
+      case 'USD': return 'fa-solid fa-dollar-sign';
+      case 'EUR': return 'fa-solid fa-euro-sign';
+      default: return '';
+    }
+  }
+
   return (
     <div className="space-y-8">
       <Card>
@@ -53,11 +61,24 @@ export function HistoricalChart({ data, weekendPeak }: HistoricalChartProps) {
           <CardTitle>Historial de 30 días</CardTitle>
           <Select value={selectedCurrency} onValueChange={(value) => setSelectedCurrency(value as CurrencyCode)}>
             <SelectTrigger className="w-[120px]">
-              <SelectValue placeholder="Moneda" />
+              <div className="flex items-center gap-2">
+                <i className={`${getIconClass(selectedCurrency)} h-4 w-4 text-muted-foreground`}></i>
+                <SelectValue placeholder="Moneda" />
+              </div>
             </SelectTrigger>
             <SelectContent>
-              <SelectItem value="USD">USD</SelectItem>
-              <SelectItem value="EUR">EUR</SelectItem>
+              <SelectItem value="USD">
+                <div className="flex items-center gap-2">
+                  <i className={`${getIconClass("USD")} h-4 w-4 text-muted-foreground`}></i>
+                  <span>USD</span>
+                </div>
+              </SelectItem>
+              <SelectItem value="EUR">
+                <div className="flex items-center gap-2">
+                  <i className={`${getIconClass("EUR")} h-4 w-4 text-muted-foreground`}></i>
+                  <span>EUR</span>
+                </div>
+              </SelectItem>
             </SelectContent>
           </Select>
         </CardHeader>
