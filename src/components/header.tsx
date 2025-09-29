@@ -1,9 +1,20 @@
+"use client";
+
 import Link from 'next/link';
-import { ArrowRightLeft, LineChart } from 'lucide-react';
+import { usePathname } from 'next/navigation';
+import { ArrowRightLeft, LineChart, Home } from 'lucide-react';
 import { AboutModal } from './about-modal';
 import { Button } from '@/components/ui/button';
 
 export function Header() {
+  const pathname = usePathname();
+
+  const isChartsPage = pathname === '/charts';
+  const linkHref = isChartsPage ? '/' : '/charts';
+  const buttonIcon = isChartsPage ? <Home className="h-4 w-4" /> : <LineChart className="h-4 w-4" />;
+  const srText = isChartsPage ? 'Inicio' : 'Gráficos';
+
+
   return (
     <header className="mb-8 border-b">
       <div className="container mx-auto flex items-center justify-between py-4">
@@ -18,10 +29,10 @@ export function Header() {
             </h1>
           </Link>
         </div>
-        <Link href="/charts" passHref>
+        <Link href={linkHref} passHref>
           <Button variant="outline" size="icon">
-            <LineChart className="h-4 w-4" />
-            <span className="sr-only">Gráficos</span>
+            {buttonIcon}
+            <span className="sr-only">{srText}</span>
           </Button>
         </Link>
       </div>
