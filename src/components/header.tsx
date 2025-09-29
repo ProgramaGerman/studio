@@ -17,7 +17,7 @@ export function Header() {
 
   return (
     <header className="mb-8 border-b">
-      <div className="container mx-auto flex items-center justify-between py-4">
+      <div className="container mx-auto flex items-center justify-between py-4 px-4 sm:px-0">
         <AboutModal />
         <div className="flex items-center justify-center gap-3">
           <Link href="/" className="flex items-center gap-3">
