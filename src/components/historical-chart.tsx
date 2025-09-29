@@ -61,10 +61,12 @@ export function HistoricalChart({ data, weekendPeak }: HistoricalChartProps) {
           <CardTitle>Historial de 30 días</CardTitle>
           <Select value={selectedCurrency} onValueChange={(value) => setSelectedCurrency(value as CurrencyCode)}>
             <SelectTrigger className="w-[120px]">
-              <div className="flex items-center gap-2">
-                <i className={`${getIconClass(selectedCurrency)} h-4 w-4 text-muted-foreground`}></i>
-                <SelectValue placeholder="Moneda" />
-              </div>
+              <SelectValue asChild>
+                <div className="flex items-center gap-2">
+                  <i className={`${getIconClass(selectedCurrency)} h-4 w-4 text-muted-foreground`}></i>
+                  <span>{selectedCurrency}</span>
+                </div>
+              </SelectValue>
             </SelectTrigger>
             <SelectContent>
               <SelectItem value="USD">
