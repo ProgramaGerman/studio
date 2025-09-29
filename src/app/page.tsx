@@ -3,6 +3,7 @@ import { ExchangeRateCard } from '@/components/exchange-rate-card';
 import { CurrencyConverter } from '@/components/currency-converter';
 import { getExchangeRates } from '@/lib/actions';
 import { Separator } from '@/components/ui/separator';
+import { Footer } from '@/components/footer';
 
 export default async function Home() {
   const rates = await getExchangeRates();
@@ -10,9 +11,9 @@ export default async function Home() {
   const eurRate = rates.find(r => r.base === 'EUR');
 
   return (
-    <div className="min-h-screen bg-background text-foreground">
+    <div className="flex flex-col min-h-screen bg-background text-foreground">
       <Header />
-      <main className="container mx-auto px-4 pb-12 animate-in fade-in duration-500">
+      <main className="flex-grow container mx-auto px-4 pb-12 animate-in fade-in duration-500">
         <div className="text-center mb-8 md:mb-12">
           <h2 className="text-3xl font-bold tracking-tight text-foreground/90">
             Tasas de Cambio Actuales
@@ -50,6 +51,7 @@ export default async function Home() {
           <CurrencyConverter rates={rates} />
         </section>
       </main>
+      <Footer />
     </div>
   );
 }
