@@ -24,12 +24,16 @@ export default async function Home() {
           {usdRate ? (
             <ExchangeRateCard {...usdRate} />
           ) : (
-            <p>Could not load USD rate.</p>
+            <div className="text-center p-4">
+              <p>Could not load USD rate.</p>
+            </div>
           )}
           {eurRate ? (
             <ExchangeRateCard {...eurRate} />
           ) : (
-            <p>Could not load EUR rate.</p>
+            <div className="text-center p-4 md:col-start-2">
+              <p>Could not load EUR rate.</p>
+            </div>
           )}
         </section>
 
