@@ -12,6 +12,7 @@ export default async function Home() {
   const eurRate = rates.find(r => r.base === 'EUR');
 
   return (
+    <>
     <div className="flex flex-col min-h-screen bg-background text-foreground">
       <Header />
       <main className="flex-grow container mx-auto px-4 pb-12 animate-in fade-in duration-500">
@@ -54,5 +55,8 @@ export default async function Home() {
       </main>
       <Footer />
     </div>
-  );
+  
+    <Analytics />
+  </>
+);
 }
