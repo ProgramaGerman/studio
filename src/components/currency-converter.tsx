@@ -32,7 +32,7 @@ export function CurrencyConverter({ rates }: CurrencyConverterProps) {
     const amount = parseFloat(value);
     if (isNaN(amount)) return;
 
-    let newValues = { USD: "", EUR: "", VES: "" };
+    const newValues = { USD: "", EUR: "", VES: "" };
 
     if (currency === 'USD') {
         const vesValue = amount * usdToVesRate;

@@ -5,8 +5,6 @@ import {
   ChartContainer,
   ChartTooltip,
   ChartTooltipContent,
-  ChartLegend,
-  ChartLegendContent,
 } from "@/components/ui/chart";
 import {
   Select,
@@ -38,10 +36,10 @@ export function HistoricalChart({ data, weekendPeak }: HistoricalChartProps) {
 
   const chartData = data.map((item) => ({
     date: new Date(`${item.date}T00:00:00Z`).toLocaleDateString('es-VE', { month: 'short', day: 'numeric', timeZone: 'UTC' }),
-    rate: item[selectedCurrency],
+    rate: item[selectedCurrency as keyof HistoricalRate],
   }));
 
-  const peak = weekendPeak[selectedCurrency];
+  const peak = weekendPeak[selectedCurrency as keyof WeekendPeak];
 
   useEffect(() => {
     if (peak && peak.date) {
