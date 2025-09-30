@@ -1,0 +1,136 @@
+name: PR Validation
+
+on:
+  pull_request:
+    types: [opened, synchronize, reopened]
+    branches: [ main, develop ]
+
+env:
+  NODE_VERSION: '18'
+
+jobs:
+  # Validación rápida para PRs
+  quick-validation:
+    name: Quick PR Validation
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+
+      - name: Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: ${{ env.NODE_VERSION }}
+          cache: 'npm'
+
+      - name: Install dependencies
+        run: npm ci
+
+      - name: Run linting on changed files
+        run: |
+          # Solo ejecutar lint en archivos cambiados
+          CHANGED_FILES=$(git diff --name-only origin/${{ github.base_ref }}..HEAD -- '*.ts' '*.tsx' '*.js' '*.jsx' | tr '\n' ' ')
+          if [ ! -z "$CHANGED_FILES" ]; then
+            echo "Linting changed files: $CHANGED_FILES"
+            npx eslint $CHANGED_FILES
+          else
+            echo "No TypeScript/JavaScript files changed"
+          fi
+
+      - name: Type check
+        run: npm run typecheck
+
+      - name: Build check
+        run: npm run build
+
+  # Análisis de tamaño del bundle
+  bundle-analysis:
+    name: Bundle Size Analysis
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+
+      - name: Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: ${{ env.NODE_VERSION }}
+          cache: 'npm'
+
+      - name: Install dependencies
+        run: npm ci
+
+      - name: Build and analyze
+        run: |
+          npm run build
+          echo "## Bundle Analysis 📦" >> $GITHUB_STEP_SUMMARY
+          echo "Build completed successfully!" >> $GITHUB_STEP_SUMMARY
+          
+          # Si tienes @next/bundle-analyzer configurado, puedes usarlo aquí
+          if [ -f ".next/analyze/client.html" ]; then
+            echo "Bundle analysis files generated in .next/analyze/" >> $GITHUB_STEP_SUMMARY
+          fi
+
+  # Comentario automático en PR
+  pr-comment:
+    name: PR Comment
+    runs-on: ubuntu-latest
+    needs: [quick-validation, bundle-analysis]
+    if: always()
+    steps:
+      - name: Comment PR
+        uses: actions/github-script@v7
+        with:
+          script: |
+            const { data: comments } = await github.rest.issues.listComments({
+              owner: context.repo.owner,
+              repo: context.repo.repo,
+              issue_number: context.issue.number,
+            });
+            
+            const botComment = comments.find(comment => 
+              comment.user.type === 'Bot' && comment.body.includes('🚀 PR Validation Results')
+            );
+            
+            const validationResult = '${{ needs.quick-validation.result }}';
+            const bundleResult = '${{ needs.bundle-analysis.result }}';
+            
+            let status = '✅ All checks passed!';
+            if (validationResult === 'failure' || bundleResult === 'failure') {
+              status = '❌ Some checks failed!';
+            }
+            
+            const body = `## 🚀 PR Validation Results
+            
+            ${status}
+            
+            ### Results:
+            - **Quick Validation**: ${validationResult === 'success' ? '✅' : '❌'} ${validationResult}
+            - **Bundle Analysis**: ${bundleResult === 'success' ? '✅' : '❌'} ${bundleResult}
+            
+            ### Next Steps:
+            ${validationResult === 'success' && bundleResult === 'success' ? 
+              '🎉 Your PR is ready for review!' : 
+              '🔧 Please fix the failing checks before requesting review.'
+            }
+            
+            ---
+            *Updated at: ${new Date().toISOString()}*`;
+            
+            if (botComment) {
+              github.rest.issues.updateComment({
+                owner: context.repo.owner,
+                repo: context.repo.repo,
+                comment_id: botComment.id,
+                body: body
+              });
+            } else {
+              github.rest.issues.createComment({
+                owner: context.repo.owner,
+                repo: context.repo.repo,
+                issue_number: context.issue.number,
+                body: body
+              });
+            }
