@@ -4,6 +4,7 @@ import { CurrencyConverter } from '@/components/currency-converter';
 import { getExchangeRates } from '@/lib/actions';
 import { Separator } from '@/components/ui/separator';
 import { Footer } from '@/components/footer';
+import { Analytics } from "@vercel/analytics/next";
 
 export default async function Home() {
   const rates = await getExchangeRates();
