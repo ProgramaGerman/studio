@@ -1,4 +1,4 @@
-"use client";
+'use client';
 
 import { useState, useEffect } from "react";
 import {
@@ -17,6 +17,8 @@ import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/com
 import { Bar, BarChart, CartesianGrid, XAxis, YAxis } from "recharts";
 import type { HistoricalRate, WeekendPeak, CurrencyCode } from "@/lib/types";
 import { TrendingUp } from "lucide-react";
+import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
+import { getCurrencyIcon } from '@/lib/icon-map';
 
 type HistoricalChartProps = {
   data: HistoricalRate[];
@@ -33,11 +35,16 @@ const chartConfig = {
 export function HistoricalChart({ data, weekendPeak }: HistoricalChartProps) {
   const [selectedCurrency, setSelectedCurrency] = useState<CurrencyCode>("USD");
   const [formattedPeakDate, setFormattedPeakDate] = useState("");
+  const [chartData, setChartData] = useState<any[]>([]); // State for client-side formatted data
 
-  const chartData = data.map((item) => ({
-    date: new Date(`${item.date}T00:00:00Z`).toLocaleDateString('es-VE', { month: 'short', day: 'numeric', timeZone: 'UTC' }),
-    rate: item[selectedCurrency as keyof HistoricalRate],
-  }));
+  // Effect to format chart data on the client to prevent hydration mismatch
+  useEffect(() => {
+    const formattedData = data.map((item) => ({
+      date: new Date(`${item.date}T00:00:00Z`).toLocaleDateString('es-VE', { month: 'short', day: 'numeric', timeZone: 'UTC' }),
+      rate: item[selectedCurrency as keyof HistoricalRate],
+    }));
+    setChartData(formattedData);
+  }, [data, selectedCurrency]);
 
   const peak = weekendPeak[selectedCurrency as keyof WeekendPeak];
 
@@ -63,13 +70,9 @@ export function HistoricalChart({ data, weekendPeak }: HistoricalChartProps) {
     return value.toLocaleString('es-VE', { minimumFractionDigits: 2, maximumFractionDigits: 2 });
   }
 
-  const getIconClass = (currency: string) => {
-    switch(currency) {
-      case 'USD': return 'fa-solid fa-dollar-sign';
-      case 'EUR': return 'fa-solid fa-euro-sign';
-      default: return '';
-    }
-  }
+  const usdIcon = getCurrencyIcon("USD");
+  const eurIcon = getCurrencyIcon("EUR");
+  const selectedIcon = getCurrencyIcon(selectedCurrency);
 
   return (
     <div className="space-y-8">
@@ -80,7 +83,7 @@ export function HistoricalChart({ data, weekendPeak }: HistoricalChartProps) {
             <SelectTrigger className="w-[120px]">
               <SelectValue asChild>
                 <div className="flex items-center gap-2">
-                  <i className={`${getIconClass(selectedCurrency)} h-4 w-4 text-muted-foreground`}></i>
+                  {selectedIcon && <FontAwesomeIcon icon={selectedIcon} className="h-4 w-4 text-muted-foreground" />}
                   <span>{selectedCurrency}</span>
                 </div>
               </SelectValue>
@@ -88,13 +91,13 @@ export function HistoricalChart({ data, weekendPeak }: HistoricalChartProps) {
             <SelectContent>
               <SelectItem value="USD">
                 <div className="flex items-center gap-2">
-                  <i className={`${getIconClass("USD")} h-4 w-4 text-muted-foreground`}></i>
+                  {usdIcon && <FontAwesomeIcon icon={usdIcon} className="h-4 w-4 text-muted-foreground" />}
                   <span>USD</span>
                 </div>
               </SelectItem>
               <SelectItem value="EUR">
                 <div className="flex items-center gap-2">
-                  <i className={`${getIconClass("EUR")} h-4 w-4 text-muted-foreground`}></i>
+                  {eurIcon && <FontAwesomeIcon icon={eurIcon} className="h-4 w-4 text-muted-foreground" />}
                   <span>EUR</span>
                 </div>
               </SelectItem>

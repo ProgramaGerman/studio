@@ -4,6 +4,8 @@ import type { ComponentProps } from 'react';
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import type { CurrencyCode } from '@/lib/types';
+import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
+import { getCurrencyIcon } from '@/lib/icon-map';
 
 interface CurrencyInputProps extends Omit<ComponentProps<'input'>, 'onChange'> {
   id: string;
@@ -14,14 +16,7 @@ interface CurrencyInputProps extends Omit<ComponentProps<'input'>, 'onChange'> {
 }
 
 export function CurrencyInput({ id, label, currency, value, onChange, ...props }: CurrencyInputProps) {
-    const getIconClass = (currency: string) => {
-        switch(currency) {
-          case 'USD': return 'fa-solid fa-dollar-sign';
-          case 'EUR': return 'fa-solid fa-euro-sign';
-          case 'VES': return 'fa-solid fa-landmark';
-          default: return '';
-        }
-      }
+  const currencyIcon = getCurrencyIcon(currency);
 
   return (
     <div className="space-y-2">
@@ -29,8 +24,8 @@ export function CurrencyInput({ id, label, currency, value, onChange, ...props }
         {label}
       </Label>
       <div className="relative">
-        <div className="pointer-events-none absolute inset-y-0 left-0 flex items-center pl-3">
-          <i className={`${getIconClass(currency)} h-5 w-5 text-muted-foreground`}></i>
+        <div className="pointer-events-none absolute inset-y-0 left-0 flex items-center pl-3" aria-hidden="true">
+          {currencyIcon && <FontAwesomeIcon icon={currencyIcon} className="h-5 w-5 text-muted-foreground" />}
         </div>
         <Input
           id={id}
@@ -44,14 +39,13 @@ export function CurrencyInput({ id, label, currency, value, onChange, ...props }
             }
           }}
           className="pl-10 pr-16 text-lg"
+          aria-label={`${label} en ${currency}`}
           {...props}
         />
-        <div className="pointer-events-none absolute inset-y-0 right-0 flex items-center pr-4">
+        <div className="pointer-events-none absolute inset-y-0 right-0 flex items-center pr-4" aria-hidden="true">
           <span className="text-sm font-semibold text-muted-foreground">{currency}</span>
         </div>
       </div>
     </div>
   );
 }
-
-    
