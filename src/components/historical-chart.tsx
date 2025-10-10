@@ -35,13 +35,15 @@ const chartConfig = {
 export function HistoricalChart({ data, weekendPeak }: HistoricalChartProps) {
   const [selectedCurrency, setSelectedCurrency] = useState<CurrencyCode>("USD");
   const [formattedPeakDate, setFormattedPeakDate] = useState("");
-  const [chartData, setChartData] = useState<any[]>([]); // State for client-side formatted data
+  const [chartData, setChartData] = useState<{ date: string; rate: number }[]>([]); // State for client-side formatted data
 
   // Effect to format chart data on the client to prevent hydration mismatch
   useEffect(() => {
+    if (selectedCurrency === 'VES') return;
+
     const formattedData = data.map((item) => ({
       date: new Date(`${item.date}T00:00:00Z`).toLocaleDateString('es-VE', { month: 'short', day: 'numeric', timeZone: 'UTC' }),
-      rate: item[selectedCurrency as keyof HistoricalRate],
+      rate: item[selectedCurrency],
     }));
     setChartData(formattedData);
   }, [data, selectedCurrency]);
